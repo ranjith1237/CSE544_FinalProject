@@ -62,12 +62,19 @@ class PreProcessing:
         #Copy the Dataframe to a new csv file
         modified_data.to_csv('../data/State_data/'+filename+'.csv', columns=columns_data, index=False)
 
+    def generate_original_csv(self, data, columns_data, filename):
+        #Copy the Dataframe to a new csv file
+        data.to_csv('../data/State_data/'+filename+'_original.csv', columns=columns_data, index=False)
+
             
         
 
 preProcess = PreProcessing()
 #Calling the below function to load the State data to numpy arrays along with columns.
 data_AK, col_AK, data_AL, col_AL = preProcess.load_state_csv()
+#Generate original csv for each state without removing outliers
+preProcess.generate_original_csv(data_AK, col_AK, "AK")
+preProcess.generate_original_csv(data_AL, col_AL, "AL")
 #Calling the below function to check if there are any missing values in the data.
 isMissing = preProcess.missing_state_values()
 print("Is there are any missing values in the dataset?: " + str(isMissing))
