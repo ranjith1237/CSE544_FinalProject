@@ -4,8 +4,6 @@ import math
 
 class PreProcessing:
     def __init__(self):
-        # self.data_AK = np.array(list())
-        # self.data_AL = np.array(list())
         self.state_AK_dataset = np.array(list())
         self.state_AL_dataset = np.array(list())
         self.col_AK_list = ["Date","AK confirmed","AK deaths"]
@@ -15,8 +13,6 @@ class PreProcessing:
         #loading the State Dataset to Numpy array
         self.state_AK_dataset=pd.read_csv('../data/State_data/1.csv', usecols=self.col_AK_list)
         self.state_AL_dataset=pd.read_csv('../data/State_data/1.csv', usecols=self.col_AL_list)
-        # self.data_AK = self.state_AK_dataset.to_numpy()
-        # self.data_AL = self.state_AL_dataset.to_numpy()
         return self.state_AK_dataset, self.col_AK_list, self.state_AL_dataset, self.col_AL_list
 
     def missing_state_values(self):
