@@ -10,9 +10,9 @@ class EWMA:
 	def predict_next(self,X,days=7):
 		b=1-self.alpha
 		predicted=[]
-		pred=X[0]
-		prev=1
-		for i in range(1,len(X)):
+		pred=0
+		prev=0
+		for i in range(0,len(X)):
 			prev=pred
 			pred=(self.alpha*X[i]) + (b*prev)
 		for day in range(days):
