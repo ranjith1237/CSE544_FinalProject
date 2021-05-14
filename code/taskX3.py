@@ -7,7 +7,7 @@ class LinearRegression():
 
 	def get_data(self,path):
 		df=pd.read_csv(path)
-		data=df[['confirmed_cases','motor_vehicle_collisions']].values
+		data=df[['Cases','Crashes']].values
 		return data
 
 	def get_train_test_data(self,data):
@@ -22,7 +22,6 @@ class LinearRegression():
 		trainX = np.array(trainX)
 		v=np.expand_dims(np.ones(len(trainX)),axis=1)
 		trainX = np.hstack((trainX,v))
-		print(trainX)
 		trainY = np.array(trainY)
 		return trainX,trainY
 
@@ -38,15 +37,23 @@ class LinearRegression():
 			predicted.append(y)
 		print("ground_truth===>",testY)
 		print("predicted==>",predicted)
-		return predicted
+		_error = self.MSE(testY,np.array(predicted))
+		print("Mean square error for next 7 days is",_error)
+		return _error
+
+	def MSE(self,y,y_hat):
+		return np.sum((y-y_hat)**2)
+
 
 if __name__ == "__main__":
-	path="../data/Us_data/MVC2.csv"
+	path="../data/X_data/X_Processed_Final.csv"
 	df=pd.read_csv(path)
-	lr = LinearRegression(7)
+	days=7
+	lr = LinearRegression(days)
 	data=lr.get_data(path)
-	train_data = data[:70]
-	test_data = data[70:]
+	train_data = data[53:84]
+	test_data = data[84-days+1:96]
+	#print(train_data,test_data)
 	X_train,Y_train=lr.get_train_test_data(train_data)
 	beta=lr.fit_model(X_train,Y_train)
 	predicted = lr.predict_next_days(beta,test_data,days=7)
