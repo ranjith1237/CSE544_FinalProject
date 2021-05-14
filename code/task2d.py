@@ -9,7 +9,6 @@ class BayesianInference:
         pass
 
     def load_csv(self):
-        #Applying on all data since March data has been removed as part of Tukey's rule
         data_AK=pd.read_csv('../data/State_data/AK.csv').to_numpy()
         data_AL=pd.read_csv('../data/State_data/AL.csv').to_numpy()
         return data_AK, data_AL
@@ -36,6 +35,11 @@ class BayesianInference:
         xStart = 0
         xEnd = 30
 
+        #We got that alpha = sum of all sample data points + 1
+        #beta = Sum of all sample sizes + 1/calcualte the initial 4 weeks MME
+        #MAP caluclate = alpha -1 /beta = sum of all sample data points/(Sum of all sample sizes + 1/calcualte the initial 4 weeks MME)
+
+        #Using 5th week's data to calculate the posterior
         alpha1 = np.sum(sample1) + 1
         beta1 = sample1.size + 1/beta
         # x1 = np.linspace(stats.gamma.ppf(0.01, alpha1, scale= 1/beta1), stats.gamma.ppf(0.99, alpha1, scale= 1/beta1), 100)
@@ -44,7 +48,7 @@ class BayesianInference:
         map1 = (alpha1 - 1)/beta1
         plt.plot(x1, y1, "y-", label="5th Week MAP: " + str(map1)) 
 
-
+        #Using 6th week's data to calculate the posterior
         alpha2 = np.sum(sample1) + np.sum(sample2) +  1
         beta2 = sample1.size + sample2.size + 1/beta
         x2 = np.linspace(xStart,xEnd, 10000)
@@ -52,7 +56,7 @@ class BayesianInference:
         map2 = (alpha2 - 1)/beta2
         plt.plot(x2, y2, "r-", label="6th Week MAP: " + str(map2)) 
 
-
+        #Using 7th week's data to calculate the posterior
         alpha3 = np.sum(sample1) + np.sum(sample2) + np.sum(sample3) + 1
         beta3 = sample1.size + sample2.size + sample3.size + 1/beta
         x3 = np.linspace(xStart,xEnd, 10000)
@@ -60,7 +64,7 @@ class BayesianInference:
         map3 = (alpha3 - 1)/beta3
         plt.plot(x3, y3, "g-", label="7th Week MAP: " + str(map3)) 
 
-
+        #Using 8th week's data to calculate the posterior
         alpha4 = np.sum(sample1) + np.sum(sample2) + np.sum(sample3) + np.sum(sample4) +  1
         beta4 = sample1.size + sample2.size + sample3.size + sample4.size + 1/beta
         x4 = np.linspace(xStart,xEnd, 10000)

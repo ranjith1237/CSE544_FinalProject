@@ -1,6 +1,7 @@
 import numpy as np 
 import pandas as pd 
 import math
+import matplotlib.pyplot as plt
 
 class PreProcessing:
     def __init__(self):
@@ -87,6 +88,19 @@ class PreProcessing:
                         outliers.append(j)
         return outliers
 
+    def drawBoxPlots(self, dataset, columns, state):
+        data = []
+        for i in columns[1:]:
+            data= dataset[i].to_numpy(dtype=object)
+            fig = plt.figure(figsize =(10, 7))
+            ax = fig.add_subplot(111)
+            bp = ax.boxplot(data, patch_artist = True,
+                            notch ='True', vert = 0)
+            plt.title("Box plot : " + state)
+            ax.get_xaxis().tick_bottom()
+            ax.get_yaxis().tick_left()
+        plt.show()
+
     def remove_outliers(self, outliers, data, columns_data, filename):
         #Remove the outliers first from the dataset
         modified_data = data.drop(outliers)
@@ -117,6 +131,7 @@ print("######################################################")
 print("")
 outliers_AK = preProcess.detect_outliers(data_AK, col_AK, "AK")
 print("Number of Outliers found = " + str(len(outliers_AK)))
+preProcess.drawBoxPlots(data_AK, col_AK, "AK")
 print("")
 print("######################################################")
 print("For State AL")
@@ -124,6 +139,7 @@ print("######################################################")
 print("")
 outliers_AL = preProcess.detect_outliers(data_AL, col_AL, "AL")
 print("Number of Outliers found = " + str(len(outliers_AL)))
+preProcess.drawBoxPlots(data_AL, col_AL, "AL")
 print("")
 
 # #Removing the outliers and creating seperate csvs for both states

@@ -102,7 +102,7 @@ class kstest_and_permtest:
 
 
 def plot_2CDFs(a, b, col, dist):
-	a = np.sort(a);
+	a = np.sort(a)
 	y_a = eCDF(a)
 	if dist=="poisson":
 		k = np.arange(0, np.max(a), 1)

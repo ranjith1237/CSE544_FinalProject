@@ -1,15 +1,17 @@
 import numpy as np
 import pandas as pd
-
+#Calculate the tests
 class MeanTests:
 
     def __init__(self):
         self.zalpha = 1.95996
-        self.tone = 1.69726088
-        self.ttwo = 1.67155277
+        # for 30
+        self.tone = 2.04
+        # for 57 and 58
+        self.ttwo = 2.00
 
     def load_csv(self):
-        #Applying on all data since March data has been removed as part of Tukey's rule
+        #Applying on all data since some data has been removed as part of Tukey's rule
         data_AK=pd.read_csv('../data/State_data/AK_original.csv').to_numpy()
         data_AL=pd.read_csv('../data/State_data/AL_original.csv').to_numpy()
         return data_AK, data_AL
@@ -28,6 +30,7 @@ class MeanTests:
     def get_mle(self,data):
         return np.sum(data)/data.size
     
+    #One Sample Walds Test
     def apply_one_walds(self, data):
         feb_data, mar_data = self.get_months_data(data)
         feb_data_count = feb_data[:,1:2].flatten()
@@ -60,7 +63,7 @@ class MeanTests:
         else:
             print("Reject that means of the deaths are same between Feb'21 and Mar'21")
 
-
+    #Two Sample Walds Test
     def apply_two_walds(self, data):
         feb_data, mar_data = self.get_months_data(data)
         feb_data_count = feb_data[:,1:2].flatten()
@@ -96,6 +99,7 @@ class MeanTests:
         else:
             print("Reject that means of the deaths are same between Feb'21 and Mar'21")
 
+    #Calculates the corrected variance of given data
     def true_var(self, data):
         data_count = data[:,1:2].flatten()
         data_deaths = data[:,2:3].flatten()
@@ -104,6 +108,7 @@ class MeanTests:
         var_deaths = np.var(data_deaths, ddof=1)
         return var_count, var_deaths
 
+    #Apply one sample Z test
     def apply_one_z(self, data, var_count, var_deaths):
         feb_data, mar_data = self.get_months_data(data)
         feb_data_count = feb_data[:,1:2].flatten()
@@ -136,7 +141,7 @@ class MeanTests:
         else:
             print("Reject that means of the deaths are same between Feb'21 and Mar'21")
     
-
+    #Apply one sample T test
     def apply_one_t(self, data):
         feb_data, mar_data = self.get_months_data(data)
         feb_data_count = feb_data[:,1:2].flatten()
@@ -170,7 +175,7 @@ class MeanTests:
         else:
             print("Reject that means of the deaths are same between Feb'21 and Mar'21")
 
-    
+    #Apply two sample T test
     def apply_two_t(self, data):
         feb_data, mar_data = self.get_months_data(data)
         feb_data_count = feb_data[:,1:2].flatten()
