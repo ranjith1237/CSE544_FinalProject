@@ -74,7 +74,7 @@ class kstest_and_permtest:
 		#perform hypothesis testing with the dmax we got and the critical value
 		hypothesis_testing(dmax, self.threshold, H_0, "state1_data", "state2_data")
 		#plotting the 2CDFS for reference
-		plot_2CDFs(state1_data, state2_data, col, "2-sample")
+		plot_2CDFs(state2_data, state1_data, col, "2-sample")
 
 	def check_pstest(self, state1_data, state2_data, col):
 		#getting lengths of two datasets before merging
@@ -120,7 +120,7 @@ def plot_2CDFs(a, b, col, dist):
 	elif dist=="2-sample":
 		b = np.sort(b)
 		y_b = eCDF(b)
-		dist = "State2"
+		dist = "State1"
 	
 	# print("a is ", a)
 	# print("y_a is ", y_a)
@@ -128,7 +128,7 @@ def plot_2CDFs(a, b, col, dist):
 	# print("y_b is ", y_b)
 	# d,age = ks_test_values(M,F)
 	plt.figure('eCDF')
-	plt.plot(a, y_a ,'-b',label='eCDF of State1')
+	plt.plot(a, y_a ,'-b',label='eCDF of State2')
 	plt.plot(b, y_b ,'-r',label='eCDF of ' + dist)
 	# plt.plot([age,age],[y_M[X_M.index(age)],y_F[X_F.index(age)]])
 	plt.xlabel(col)
