@@ -54,7 +54,8 @@ class kstest_and_permtest:
 	def check_binomial(self, state1_data, state2_data, col):
 		H_0 = ['We say that our dataset','follow','distribution']
 		#finding the parameters for binomial distribution using state1 data, mean/n gives the p value
-		n = state1_data.shape[0]
+		d_mean = np.mean(state1_data)
+		n = d_mean**2/(d_mean - np.var(state1_data))
 		p = np.mean(state1_data)/n
 		print(n, p)
 		#finding the dmax(max distance between the CDFS of state2 data and binomial distribution)
@@ -132,7 +133,7 @@ def plot_2CDFs(a, b, col, dist):
 	# plt.plot([age,age],[y_M[X_M.index(age)],y_F[X_F.index(age)]])
 	plt.xlabel(col)
 	plt.ylabel('Pr[X<=x]')
-	plt.grid()
+	#plt.grid()
 	plt.legend()
 	plt.show()
 
