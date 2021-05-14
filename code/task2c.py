@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.special import factorial
 from scipy.stats import poisson, geom, binom
 import os
 
@@ -21,84 +22,118 @@ class kstest_and_permtest:
 		between_two_dates = after_start_date & before_end_date
 		filtered_data = df.loc[between_two_dates]
 		test_data=filtered_data[state+" "+col].values
-		#print(X_data)
-		#test_data = np.sort(test_data)
-		#test_data = test_data/np.mean(test_data)
 		return test_data
 
 	def check_poisson(self, state1_data, state2_data, col):
 		H_0 = ['We say that our dataset','follow','distribution']
-		#finding the parameters for poisson
+		#finding the parameters for poisson distribution using state1 data, mean gives the lamda value
 		lamda = np.mean(state1_data)
 		print(lamda)
+		#finding the dmax(max distance between the CDFS of state2 data and poisson distribution)
 		dmax = find_dmax(state2_data, lamda, "poisson")
-		print(dmax)
+		print("dmax value => ", dmax)
+		#perform hypothesis testing with the dmax we got and the critical value
 		hypothesis_testing(dmax, self.threshold, H_0, "state2_data", "poisson")
+		#plotting the 2CDFS for reference
+		plot_2CDFs(state2_data, lamda, col, "poisson")
 
 	def check_geometric(self, state1_data, state2_data, col):
 		H_0 = ['We say that our dataset','follow','distribution']
+		#finding the parameters for geometric distribution using state1 data, 1/mean gives the probability for geometric dist
 		k = np.mean(state1_data)
 		p = np.reciprocal(k) if k > 1 else np.reciprocal(k+1)
 		print(p)
+		#finding the dmax(max distance between the CDFS of state2 data and geometric distribution)
 		dmax = find_dmax(state2_data, p, "geometric")
-		print(dmax)
+		print("dmax value => ", dmax)
+		#perform hypothesis testing with the dmax we got and the critical value
 		hypothesis_testing(dmax, self.threshold, H_0, "state2_data", "geometric")
+		#plotting the 2CDFS for reference
+		plot_2CDFs(state2_data, p, col, "geometric")
 
 	def check_binomial(self, state1_data, state2_data, col):
 		H_0 = ['We say that our dataset','follow','distribution']
+		#finding the parameters for binomial distribution using state1 data, mean/n gives the p value
 		n = state1_data.shape[0]
 		p = np.mean(state1_data)/n
 		print(n, p)
+		#finding the dmax(max distance between the CDFS of state2 data and binomial distribution)
 		dmax = find_dmax(state2_data, [n, p], "binomial")
-		print(dmax)
+		print("dmax value => ", dmax)
+		#perform hypothesis testing with the dmax we got and the critical value
 		hypothesis_testing(dmax, self.threshold, H_0, "state2_data", "binomial")
+		#plotting the 2CDFS for reference
+		plot_2CDFs(state2_data, [n, p], col, "binomial")
 
 	def check_2sample(self, state1_data, state2_data, col):
 		H_0 = ['We say that our dataset','follow','distribution']
+		#In 2 sample we directly find the dmax(max distance between the CDFS of state1 and state2 data)
 		dmax = find_dmax(state1_data, state2_data, "2-sample")
-		print(dmax)
+		print("dmax value => ", dmax)
+		#perform hypothesis testing with the dmax we got and the critical value
 		hypothesis_testing(dmax, self.threshold, H_0, "state1_data", "state2_data")
+		#plotting the 2CDFS for reference
+		plot_2CDFs(state1_data, state2_data, col, "2-sample")
 
 	def check_pstest(self, state1_data, state2_data, col):
+		#getting lengths of two datasets before merging
 		len1 = state1_data.shape[0]
 		len2 = state2_data.shape[0]
+		#calculating T_obsolute value from the means of two states
 		T_obs = np.abs(np.mean(state1_data) - np.mean(state2_data))
+		#combining the two states data
 		combined_data = np.concatenate((state1_data, state2_data), axis=None)
+		#declaring an empty array to add all the newly calculated differences
 		T_arr = []
+		#taking 1000 samples of random order from the combined data
 		for i in range(1000):
 			np.random.shuffle(combined_data)
+			#calcualting and appending the differences of means(length of the datasets is also preserved here)
 			T_i = np.abs(np.mean(combined_data[:len1]) - np.mean(combined_data[len1:]))
+			#appending binary since we only need of cases where T_i > T_Obsolute
 			T_arr.append(1 if T_i>T_obs else 0)
+		#calculating the p-value from T_arr array
 		p_value = np.sum(T_arr)/len(T_arr)
-		print("p_value is", p_value)
+		print("p_value =>", p_value)
 		if p_value < self.threshold:
 			print("distribution of both the states are not the same for", col, "cases")
 		else:
 			print("distribution of both the states are the same for", col, "cases")
 
 
-
-def plot_CDF(inp):
-	inp = np.sort(inp)
-	n = len(inp)
-	x = [0]
-	y = [0]
-	#appending first element
-	i=0
-	count = 0
-	while i<n:
-		x.append(inp[i])
-		y.append(y[len(y)-1])
-		x.append(inp[i])
-		check = inp[i]
-		#print("i is ", i)
-		while inp[i] == check:
-			count+=1
-			i=i+1
-			#print("updating i to ", i)
-			if i == n: break
-		y.append(count/n)
-	plt.plot(x, y, linestyle='-')
+def plot_2CDFs(a, b, col, dist):
+	a = np.sort(a);
+	y_a = eCDF(a)
+	if dist=="poisson":
+		k = np.arange(0, np.max(a), 1)
+		y_b = poisson.cdf(k, b)
+		b = k
+	elif dist=="geometric":
+		k = np.arange(0, np.max(a), 1)
+		y_b = geom.cdf(k, b)
+		b = k
+	elif dist=="binomial":
+		k = np.arange(0, np.max(a), 1)
+		y_b = binom.cdf(k, b[0], b[1])
+		b = k
+	elif dist=="2-sample":
+		b = np.sort(b)
+		y_b = eCDF(b)
+		dist = "State2"
+	
+	# print("a is ", a)
+	# print("y_a is ", y_a)
+	# print("b is ", b)
+	# print("y_b is ", y_b)
+	# d,age = ks_test_values(M,F)
+	plt.figure('eCDF')
+	plt.plot(a, y_a ,'-b',label='eCDF of State1')
+	plt.plot(b, y_b ,'-r',label='eCDF of ' + dist)
+	# plt.plot([age,age],[y_M[X_M.index(age)],y_F[X_F.index(age)]])
+	plt.xlabel(col)
+	plt.ylabel('Pr[X<=x]')
+	plt.grid()
+	plt.legend()
 	plt.show()
 
 def eCDF(data):
@@ -117,9 +152,9 @@ def eCDF2(data1, data2):
 
 def hypothesis_testing(dmax, c, H_0, dataset, dist):
 	if dmax < c:
-		print(H_0[0],dataset,H_0[1],dist,H_0[2])
+		print("Decision=> ",H_0[0],dataset,H_0[1],dist,H_0[2])
 	else:
-		print(H_0[0],dataset,"doesn't",H_0[1],dist,H_0[2])
+		print("Decision=> ",H_0[0],dataset,"doesn't",H_0[1],dist,H_0[2])
 
 def find_dmax(data, param, dist):
 	# print("data ", data)
@@ -146,45 +181,41 @@ def find_dmax(data, param, dist):
 	# print("dmax y ", y)
 	return np.amax(np.abs(x-y))
 
-def get_CDF(data, dist):
-	if dist=="empirical":
-		plot_CDF(data)
-	elif dist=="poisson":
-		lamda = data
-
 def kstest(path, states):
+	#declare the class with the states and critical value
 	ks1 = kstest_and_permtest(states[0], states[1], 0.05)
+
+	#get the confirmed cases and deaths for both the states
 	state1_confirmed_data = ks1.get_data(path, states[0], "confirmed")
 	state2_confirmed_data = ks1.get_data(path, states[1], "confirmed")
 	state1_deaths_data = ks1.get_data(path, states[0], "deaths")
 	state2_deaths_data = ks1.get_data(path, states[1], "deaths")
-	# print("state1_confirmed_data",state1_confirmed_data)
-	# print("state1_confirmed_data shape", state1_confirmed_data.shape)
-	# print("state2_confirmed_data",state2_confirmed_data)
-	# print("state2_confirmed_data shape", state2_confirmed_data.shape)
-	# plot_CDF(state1_confirmed_data)
-	# plot_CDF(state2_confirmed_data)
+
 
 	#1-sample, Poisson
+	print("##############################################################################")
 	print("Performing KS test 1-sample on two states guessing the distribution as poisson")
 	ks1.check_poisson(state1_confirmed_data, state2_confirmed_data, "confirmed")
 	ks1.check_poisson(state1_deaths_data, state2_deaths_data, "deaths")
 
-
 	#1-sample, Geometric
+	print("################################################################################")
 	print("Performing KS test 1-sample on two states guessing the distribution as geometric")
 	ks1.check_geometric(state1_confirmed_data, state2_confirmed_data, "confirmed")
 	ks1.check_geometric(state1_deaths_data, state2_deaths_data, "deaths")
 
 	#1-sample, Binomial
+	print("###############################################################################")
 	print("Performing KS test 1-sample on two states guessing the distribution as binomial")
 	ks1.check_binomial(state1_confirmed_data, state2_confirmed_data, "confirmed")
 	ks1.check_binomial(state1_deaths_data, state2_deaths_data, "deaths")
 
 	#2-sample
+	print("###########################################################################################")
 	print("Performing KS test 2-sample on two states to see whether they both follow same distribution")
 	ks1.check_2sample(state1_confirmed_data, state2_confirmed_data, "confirmed")
 	ks1.check_2sample(state1_deaths_data, state2_deaths_data, "deaths")
+	
 	
 def permtest(path, states):
 	pt1 = kstest_and_permtest(states[0], states[1], 0.05)
@@ -194,6 +225,8 @@ def permtest(path, states):
 	state2_deaths_data = pt1.get_data(path, states[1], "deaths")
 
 	#permutation test
+	print("###########################################################################################")
+	print("Performing permutation test on two states to see whether they both follow same distribution")
 	pt1.check_pstest(state1_confirmed_data, state2_confirmed_data, "confirmed")
 	pt1.check_pstest(state1_deaths_data, state2_deaths_data, "deaths")
 
@@ -202,6 +235,8 @@ def permtest(path, states):
 if __name__ == '__main__':
 	path="../data/State_data/"
 	states=["AK","AL"]
+	#perform kstest with the above states
 	kstest(path, states)
+	#perform permtest with the above states
 	permtest(path, states)
 	
