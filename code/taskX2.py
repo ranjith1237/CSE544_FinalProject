@@ -15,39 +15,40 @@ class pearson_correlaton:
 
 def check_correlation(val, crit):
 	if np.abs(val) < crit:
-		print("Independent")
-	elif val > (1-crit):
-		print("Correlated")
+		print("No Correlation")
+	elif val > crit:
+		print("Positively Correlated")
 	else:
-		print("Not Correlated")
+		print("Negatively Correlated")
 
 def cal_pearson(A,B):
+	print("###################################################")
+	print("Performing pearson correlaton test for the Hypothesis")
 	return (np.mean(A*B) - np.mean(A)*np.mean(B))/(np.std(A)*np.std(B))
 
 if __name__ == '__main__':
-	# A = np.array([48,40,58,53,65,25,52,34,30,45])
-	# B = np.array([54,48,51,47,62,35,70,20,25,40])
-	# C = np.array([19,40,35,41,38,32,32,37,37,15])
-	crit = 0.1
+	crit = 0.5
 	
 	path="../data/X_data"
 	cols=["Crashes","Cases"]
 	peace = pearson_correlaton()
-	start_date = "2020-01-1"
+
+
+	start_date = "2020-05-01"
+	end_date = "2020-06-31"
+	collisions = peace.get_data(path, cols[0], start_date, end_date)
+	cases = peace.get_data(path, cols[1], start_date, end_date)
+	gg = cal_pearson(collisions, cases)
+	print("Sxy-value => ", gg)
+	check_correlation(gg, crit)
+
+	start_date = "2021-01-01"
 	end_date = "2021-01-31"
 	collisions = peace.get_data(path, cols[0], start_date, end_date)
 	cases = peace.get_data(path, cols[1], start_date, end_date)
-
 	gg = cal_pearson(collisions, cases)
 	print("Sxy-value => ", gg)
-	# l = cal_pearson(A,B)
-	# m = cal_pearson(A,C)
-	# n = cal_pearson(B,C)
-
 	check_correlation(gg, crit)
-	# check_correlation(l, crit)
-	# check_correlation(m, crit)
-	# check_correlation(n, crit)
 
 	
 
